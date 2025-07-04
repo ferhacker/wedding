@@ -131,19 +131,26 @@
                 const giftItemDiv = document.createElement('div');
                 giftItemDiv.className = 'bg-white p-4 rounded-lg shadow-md mb-4 flex flex-col md:flex-row items-center justify-between';
 
+                // Imagem do presente
+                const giftImage = document.createElement('img');
+                giftImage.src = gift.imageUrl;
+                giftImage.alt = gift.name;
+                giftImage.className = 'w-24 h-24 rounded-full object-cover mr-4 mb-2 md:mb-0';
+                giftItemDiv.appendChild(giftImage);
+
                 const giftNameDiv = document.createElement('div');
-                giftNameDiv.className = 'text-lg font-semibold text-gray-800 mb-2 md:mb-0';
+                giftNameDiv.className = 'text-lg font-semibold text-gray-800 mb-2 md:mb-0 flex-grow'; // flex-grow para ocupar espaço
                 giftNameDiv.textContent = gift.name;
                 giftItemDiv.appendChild(giftNameDiv);
 
                 if (gift.isTaken) {
                     const takenByDiv = document.createElement('div');
-                    takenByDiv.className = 'text-green-600 font-medium';
+                    takenByDiv.className = 'text-green-600 font-medium md:ml-4'; // Adiciona margem à esquerda em telas maiores
                     takenByDiv.textContent = `Reservado por: ${gift.takenBy}`;
                     giftItemDiv.appendChild(takenByDiv);
                 } else {
                     const actionsDiv = document.createElement('div');
-                    actionsDiv.className = 'flex flex-col md:flex-row items-center';
+                    actionsDiv.className = 'flex flex-col md:flex-row items-center md:ml-4'; // Adiciona margem à esquerda em telas maiores
 
                     const inputField = document.createElement('input');
                     inputField.type = 'text';
@@ -181,56 +188,56 @@
         // Função para adicionar presentes iniciais (agora apenas localmente)
         function addInitialGifts() {
             const initialGiftsData = [
-                { id: '1', name: 'Liquidificador', isTaken: false, takenBy: '' },
-                { id: '2', name: 'Batedeira', isTaken: false, takenBy: '' },
-                { id: '3', name: 'Cafeteira', isTaken: false, takenBy: '' },
-                { id: '4', name: 'Jogo de Panelas', isTaken: false, takenBy: '' },
-                { id: '5', name: 'Aspirador de Pó', isTaken: false, takenBy: '' },
-                { id: '6', name: 'Air Fryer', isTaken: false, takenBy: '' },
-                { id: '7', name: 'Robô Aspirador', isTaken: false, takenBy: '' },
-                { id: '8', name: 'Máquina de Lavar', isTaken: false, takenBy: '' },
-                { id: '9', name: 'Geladeira', isTaken: false, takenBy: '' },
-                { id: '10', name: 'Forno Elétrico', isTaken: false, takenBy: '' },
-                { id: '11', name: 'Micro-ondas', isTaken: false, takenBy: '' },
-                { id: '12', name: 'Smart TV', isTaken: false, takenBy: '' },
-                { id: '13', name: 'Home Theater', isTaken: false, takenBy: '' },
-                { id: '14', name: 'Faqueiro', isTaken: false, takenBy: '' },
-                { id: '15', name: 'Jogo de Jantar', isTaken: false, takenBy: '' },
-                { id: '16', name: 'Jogo de Copos', isTaken: false, takenBy: '' },
-                { id: '17', name: 'Toalhas de Banho', isTaken: false, takenBy: '' },
-                { id: '18', name: 'Roupas de Cama', isTaken: false, takenBy: '' },
-                { id: '19', name: 'Ferro de Passar', isTaken: false, takenBy: '' },
-                { id: '20', name: 'Tábua de Passar', isTaken: false, takenBy: '' },
-                { id: '21', name: 'Secador de Cabelo', isTaken: false, takenBy: '' },
-                { id: '22', name: 'Fone de Ouvido Sem Fio', isTaken: false, takenBy: '' },
-                { id: '23', name: 'Caixa de Som Bluetooth', isTaken: false, takenBy: '' },
-                { id: '24', name: 'Bicicleta', isTaken: false, takenBy: '' },
-                { id: '25', name: 'Kit Churrasco', isTaken: false, takenBy: '' },
-                { id: '26', name: 'Máquina de Gelo', isTaken: false, takenBy: '' },
-                { id: '27', name: 'Adega Climatizada', isTaken: false, takenBy: '' },
-                { id: '28', name: 'Panela de Pressão Elétrica', isTaken: false, takenBy: '' },
-                { id: '29', name: 'Grill Elétrico', isTaken: false, takenBy: '' },
-                { id: '30', name: 'Sanduicheira', isTaken: false, takenBy: '' },
-                { id: '31', name: 'Chaleira Elétrica', isTaken: false, takenBy: '' },
-                { id: '32', name: 'Torradeira', isTaken: false, takenBy: '' },
-                { id: '33', name: 'Processador de Alimentos', isTaken: false, takenBy: '' },
-                { id: '34', name: 'Mesa de Centro', isTaken: false, takenBy: '' },
-                { id: '35', name: 'Abajur', isTaken: false, takenBy: '' },
-                { id: '36', name: 'Tapete', isTaken: false, takenBy: '' },
-                { id: '37', name: 'Cortina', isTaken: false, takenBy: '' },
-                { id: '38', name: 'Espelho Decorativo', isTaken: false, takenBy: '' },
-                { id: '39', name: 'Vaso de Flores', isTaken: false, takenBy: '' },
-                { id: '40', name: 'Kit Vinho', isTaken: false, takenBy: '' },
-                { id: '41', name: 'Taças de Vinho', isTaken: false, takenBy: '' },
-                { id: '42', name: 'Balde de Gelo', isTaken: false, takenBy: '' },
-                { id: '43', name: 'Coqueteleira', isTaken: false, takenBy: '' },
-                { id: '44', name: 'Aparelho de Jantar Completo', isTaken: false, takenBy: '' },
-                { id: '45', name: 'Jogo de Chá/Café', isTaken: false, takenBy: '' },
-                { id: '46', name: 'Utensílios de Cozinha', isTaken: false, takenBy: '' },
-                { id: '47', name: 'Balança de Cozinha', isTaken: false, takenBy: '' },
-                { id: '48', name: 'Garrafa Térmica', isTaken: false, takenBy: '' },
-                { id: '49', name: 'Copo Térmico', isTaken: false, takenBy: '' },
-                { id: '50', name: 'Kit de Potes Herméticos', isTaken: false, takenBy: '' }
+                { id: '1', name: 'Liquidificador', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Liquidificador' },
+                { id: '2', name: 'Batedeira', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Batedeira' },
+                { id: '3', name: 'Cafeteira', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Cafeteira' },
+                { id: '4', name: 'Jogo de Panelas', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Panelas' },
+                { id: '5', name: 'Aspirador de Pó', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Aspirador' },
+                { id: '6', name: 'Air Fryer', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Air+Fryer' },
+                { id: '7', name: 'Robô Aspirador', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Robo+Aspirador' },
+                { id: '8', name: 'Máquina de Lavar', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Maq+Lavar' },
+                { id: '9', name: 'Geladeira', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Geladeira' },
+                { id: '10', name: 'Forno Elétrico', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Forno' },
+                { id: '11', name: 'Micro-ondas', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Micro-ondas' },
+                { id: '12', name: 'Smart TV', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Smart+TV' },
+                { id: '13', name: 'Home Theater', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Home+Theater' },
+                { id: '14', name: 'Faqueiro', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Faqueiro' },
+                { id: '15', name: 'Jogo de Jantar', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Jantar' },
+                { id: '16', name: 'Jogo de Copos', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Copos' },
+                { id: '17', name: 'Toalhas de Banho', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Toalhas' },
+                { id: '18', name: 'Roupas de Cama', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Roupas+Cama' },
+                { id: '19', name: 'Ferro de Passar', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Ferro' },
+                { id: '20', name: 'Tábua de Passar', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Tabua' },
+                { id: '21', name: 'Secador de Cabelo', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Secador' },
+                { id: '22', name: 'Fone de Ouvido Sem Fio', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Fone' },
+                { id: '23', name: 'Caixa de Som Bluetooth', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Caixa+Som' },
+                { id: '24', name: 'Bicicleta', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Bicicleta' },
+                { id: '25', name: 'Kit Churrasco', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Churrasco' },
+                { id: '26', name: 'Máquina de Gelo', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Maq+Gelo' },
+                { id: '27', name: 'Adega Climatizada', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Adega' },
+                { id: '28', name: 'Panela de Pressão Elétrica', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Panela+Pressao' },
+                { id: '29', name: 'Grill Elétrico', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Grill' },
+                { id: '30', name: 'Sanduicheira', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Sanduicheira' },
+                { id: '31', name: 'Chaleira Elétrica', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Chaleira' },
+                { id: '32', name: 'Torradeira', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Torradeira' },
+                { id: '33', name: 'Processador de Alimentos', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Processador' },
+                { id: '34', name: 'Mesa de Centro', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Mesa+Centro' },
+                { id: '35', name: 'Abajur', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Abajur' },
+                { id: '36', name: 'Tapete', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Tapete' },
+                { id: '37', name: 'Cortina', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Cortina' },
+                { id: '38', name: 'Espelho Decorativo', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Espelho' },
+                { id: '39', name: 'Vaso de Flores', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Vaso' },
+                { id: '40', name: 'Kit Vinho', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Kit+Vinho' },
+                { id: '41', name: 'Taças de Vinho', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Tacas+Vinho' },
+                { id: '42', name: 'Balde de Gelo', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Balde+Gelo' },
+                { id: '43', name: 'Coqueteleira', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Coqueteleira' },
+                { id: '44', name: 'Aparelho de Jantar Completo', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Aparelho+Jantar' },
+                { id: '45', name: 'Jogo de Chá/Café', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Cha+Cafe' },
+                { id: '46', name: 'Utensílios de Cozinha', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Utensilios' },
+                { id: '47', name: 'Balança de Cozinha', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Balanca' },
+                { id: '48', name: 'Garrafa Térmica', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Garrafa+Termica' },
+                { id: '49', name: 'Copo Térmico', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Copo+Termico' },
+                { id: '50', name: 'Kit de Potes Herméticos', isTaken: false, takenBy: '', imageUrl: 'https://placehold.co/100x100/FFD700/000000?text=Potes' }
             ];
 
             // Apenas adiciona se a lista estiver vazia para evitar duplicação em recargas
