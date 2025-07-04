@@ -85,16 +85,8 @@
         </div>
     </div>
 
-    <!-- Firebase SDKs -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, query, onSnapshot, doc, updateDoc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
+    <script type="text/javascript">
         // Variáveis globais para o estado da aplicação
-        let db;
-        let auth;
-        let userId = '';
         let gifts = [];
         let messageTimeout;
 
@@ -186,215 +178,93 @@
             });
         }
 
-        // Adiciona presentes iniciais se a lista estiver vazia
-        const addInitialGifts = async (giftsCollectionRef) => {
-            const initialGifts = [
-                { name: 'Liquidificador', isTaken: false, takenBy: '' },
-                { name: 'Batedeira', isTaken: false, takenBy: '' },
-                { name: 'Cafeteira', isTaken: false, takenBy: '' },
-                { name: 'Jogo de Panelas', isTaken: false, takenBy: '' },
-                { name: 'Aspirador de Pó', isTaken: false, takenBy: '' },
-                { name: 'Air Fryer', isTaken: false, takenBy: '' },
-                { name: 'Robô Aspirador', isTaken: false, takenBy: '' },
-                { name: 'Máquina de Lavar', isTaken: false, takenBy: '' },
-                { name: 'Geladeira', isTaken: false, takenBy: '' },
-                { name: 'Forno Elétrico', isTaken: false, takenBy: '' },
-                { name: 'Micro-ondas', isTaken: false, takenBy: '' },
-                { name: 'Smart TV', isTaken: false, takenBy: '' },
-                { name: 'Home Theater', isTaken: false, takenBy: '' },
-                { name: 'Faqueiro', isTaken: false, takenBy: '' },
-                { name: 'Jogo de Jantar', isTaken: false, takenBy: '' },
-                { name: 'Jogo de Copos', isTaken: false, takenBy: '' },
-                { name: 'Toalhas de Banho', isTaken: false, takenBy: '' },
-                { name: 'Roupas de Cama', isTaken: false, takenBy: '' },
-                { name: 'Ferro de Passar', isTaken: false, takenBy: '' },
-                { name: 'Tábua de Passar', isTaken: false, takenBy: '' },
-                { name: 'Secador de Cabelo', isTaken: false, takenBy: '' },
-                { name: 'Fone de Ouvido Sem Fio', isTaken: false, takenBy: '' },
-                { name: 'Caixa de Som Bluetooth', isTaken: false, takenBy: '' },
-                { name: 'Bicicleta', isTaken: false, takenBy: '' },
-                { name: 'Kit Churrasco', isTaken: false, takenBy: '' },
-                { name: 'Máquina de Gelo', isTaken: false, takenBy: '' },
-                { name: 'Adega Climatizada', isTaken: false, takenBy: '' },
-                { name: 'Panela de Pressão Elétrica', isTaken: false, takenBy: '' },
-                { name: 'Grill Elétrico', isTaken: false, takenBy: '' },
-                { name: 'Sanduicheira', isTaken: false, takenBy: '' },
-                { name: 'Chaleira Elétrica', isTaken: false, takenBy: '' },
-                { name: 'Torradeira', isTaken: false, takenBy: '' },
-                { name: 'Processador de Alimentos', isTaken: false, takenBy: '' },
-                { name: 'Mesa de Centro', isTaken: false, takenBy: '' },
-                { name: 'Abajur', isTaken: false, takenBy: '' },
-                { name: 'Tapete', isTaken: false, takenBy: '' },
-                { name: 'Cortina', isTaken: false, takenBy: '' },
-                { name: 'Espelho Decorativo', isTaken: false, takenBy: '' },
-                { name: 'Vaso de Flores', isTaken: false, takenBy: '' },
-                { name: 'Kit Vinho', isTaken: false, takenBy: '' },
-                { name: 'Taças de Vinho', isTaken: false, takenBy: '' },
-                { name: 'Balde de Gelo', isTaken: false, takenBy: '' },
-                { name: 'Coqueteleira', isTaken: false, takenBy: '' },
-                { name: 'Aparelho de Jantar Completo', isTaken: false, takenBy: '' },
-                { name: 'Jogo de Chá/Café', isTaken: false, takenBy: '' },
-                { name: 'Utensílios de Cozinha', isTaken: false, takenBy: '' },
-                { name: 'Balança de Cozinha', isTaken: false, takenBy: '' },
-                { name: 'Garrafa Térmica', isTaken: false, takenBy: '' },
-                { name: 'Copo Térmico', isTaken: false, takenBy: '' },
-                { name: 'Kit de Potes Herméticos', isTaken: false, takenBy: '' },
-                { name: 'Organizador de Armário', isTaken: false, takenBy: '' },
-                { name: 'Cesto de Roupa Suja', isTaken: false, takenBy: '' },
-                { name: 'Kit Limpeza', isTaken: false, takenBy: '' },
-                { name: 'Vassoura Elétrica', isTaken: false, takenBy: '' },
-                { name: 'Mop Giratório', isTaken: false, takenBy: '' },
-                { name: 'Câmera de Segurança', isTaken: false, takenBy: '' },
-                { name: 'Assistente Virtual', isTaken: false, takenBy: '' },
-                { name: 'Smartwatch', isTaken: false, takenBy: '' },
-                { name: 'Notebook', isTaken: false, takenBy: '' },
-                { name: 'Impressora', isTaken: false, takenBy: '' },
-                { name: 'Monitor', isTaken: false, takenBy: '' },
-                { name: 'Teclado e Mouse Sem Fio', isTaken: false, takenBy: '' },
-                { name: 'Webcam', isTaken: false, takenBy: '' },
-                { name: 'Microfone', isTaken: false, takenBy: '' },
-                { name: 'Cadeira Gamer', isTaken: false, takenBy: '' },
-                { name: 'Mesa Gamer', isTaken: false, takenBy: '' },
-                { name: 'Projetor', isTaken: false, takenBy: '' },
-                { name: 'Soundbar', isTaken: false, takenBy: '' },
-                { name: 'Vitrola', isTaken: false, takenBy: '' },
-                { name: 'Jogos de Tabuleiro', isTaken: false, takenBy: '' },
-                { name: 'Kit de Pintura', isTaken: false, takenBy: '' },
-                { name: 'Kit de Maquiagem', isTaken: false, takenBy: '' },
-                { name: 'Massageador', isTaken: false, takenBy: '' },
-                { name: 'Esteira Ergométrica', isTaken: false, takenBy: '' },
-                { name: 'Bicicleta Ergométrica', isTaken: false, takenBy: '' },
-                { name: 'Kit de Boxe', isTaken: false, takenBy: '' },
-                { name: 'Mochila de Viagem', isTaken: false, takenBy: '' },
-                { name: 'Malas de Viagem', isTaken: false, takenBy: '' },
-                { name: 'Kit Camping', isTaken: false, takenBy: '' },
-                { name: 'Câmera Fotográfica', isTaken: false, takenBy: '' },
-                { name: 'Drone', isTaken: false, takenBy: '' },
-                { name: 'Kit Pesca', isTaken: false, takenBy: '' },
-                { name: 'Churrasqueira Portátil', isTaken: false, takenBy: '' },
-                { name: 'Ventilador', isTaken: false, takenBy: '' },
-                { name: 'Aquecedor', isTaken: false, takenBy: '' },
-                { name: 'Umidificador', isTaken: false, takenBy: '' },
-                { name: 'Purificador de Ar', isTaken: false, takenBy: '' },
-                { name: 'Roupão', isTaken: false, takenBy: '' },
-                { name: 'Pijama', isTaken: false, takenBy: '' },
-                { name: 'Travesseiro', isTaken: false, takenBy: '' },
-                { name: 'Cobertor', isTaken: false, takenBy: '' },
-                { name: 'Edredom', isTaken: false, takenBy: '' },
-                { name: 'Cama', isTaken: false, takenBy: '' },
-                { name: 'Guarda-Roupa', isTaken: false, takenBy: '' },
-                { name: 'Sofá', isTaken: false, takenBy: '' },
-                { name: 'Poltrona', isTaken: false, takenBy: '' },
-                { name: 'Rack', isTaken: false, takenBy: '' },
-                { name: 'Luminária de Chão', isTaken: false, takenBy: '' },
-                { name: 'Luminária de Mesa', isTaken: false, takenBy: '' },
-                { name: 'Lustre', isTaken: false, takenBy: '' },
-                { name: 'Máquina de Lavar Louça', isTaken: false, takenBy: '' },
-                { name: 'Secadora de Roupas', isTaken: false, takenBy: '' },
-                { name: 'Máquina de Café Expresso', isTaken: false, takenBy: '' },
-                { name: 'Cooktop', isTaken: false, takenBy: '' },
-                { name: 'Coifa', isTaken: false, takenBy: '' }
+        // Função para adicionar presentes iniciais (agora apenas localmente)
+        function addInitialGifts() {
+            const initialGiftsData = [
+                { id: '1', name: 'Liquidificador', isTaken: false, takenBy: '' },
+                { id: '2', name: 'Batedeira', isTaken: false, takenBy: '' },
+                { id: '3', name: 'Cafeteira', isTaken: false, takenBy: '' },
+                { id: '4', name: 'Jogo de Panelas', isTaken: false, takenBy: '' },
+                { id: '5', name: 'Aspirador de Pó', isTaken: false, takenBy: '' },
+                { id: '6', name: 'Air Fryer', isTaken: false, takenBy: '' },
+                { id: '7', name: 'Robô Aspirador', isTaken: false, takenBy: '' },
+                { id: '8', name: 'Máquina de Lavar', isTaken: false, takenBy: '' },
+                { id: '9', name: 'Geladeira', isTaken: false, takenBy: '' },
+                { id: '10', name: 'Forno Elétrico', isTaken: false, takenBy: '' },
+                { id: '11', name: 'Micro-ondas', isTaken: false, takenBy: '' },
+                { id: '12', name: 'Smart TV', isTaken: false, takenBy: '' },
+                { id: '13', name: 'Home Theater', isTaken: false, takenBy: '' },
+                { id: '14', name: 'Faqueiro', isTaken: false, takenBy: '' },
+                { id: '15', name: 'Jogo de Jantar', isTaken: false, takenBy: '' },
+                { id: '16', name: 'Jogo de Copos', isTaken: false, takenBy: '' },
+                { id: '17', name: 'Toalhas de Banho', isTaken: false, takenBy: '' },
+                { id: '18', name: 'Roupas de Cama', isTaken: false, takenBy: '' },
+                { id: '19', name: 'Ferro de Passar', isTaken: false, takenBy: '' },
+                { id: '20', name: 'Tábua de Passar', isTaken: false, takenBy: '' },
+                { id: '21', name: 'Secador de Cabelo', isTaken: false, takenBy: '' },
+                { id: '22', name: 'Fone de Ouvido Sem Fio', isTaken: false, takenBy: '' },
+                { id: '23', name: 'Caixa de Som Bluetooth', isTaken: false, takenBy: '' },
+                { id: '24', name: 'Bicicleta', isTaken: false, takenBy: '' },
+                { id: '25', name: 'Kit Churrasco', isTaken: false, takenBy: '' },
+                { id: '26', name: 'Máquina de Gelo', isTaken: false, takenBy: '' },
+                { id: '27', name: 'Adega Climatizada', isTaken: false, takenBy: '' },
+                { id: '28', name: 'Panela de Pressão Elétrica', isTaken: false, takenBy: '' },
+                { id: '29', name: 'Grill Elétrico', isTaken: false, takenBy: '' },
+                { id: '30', name: 'Sanduicheira', isTaken: false, takenBy: '' },
+                { id: '31', name: 'Chaleira Elétrica', isTaken: false, takenBy: '' },
+                { id: '32', name: 'Torradeira', isTaken: false, takenBy: '' },
+                { id: '33', name: 'Processador de Alimentos', isTaken: false, takenBy: '' },
+                { id: '34', name: 'Mesa de Centro', isTaken: false, takenBy: '' },
+                { id: '35', name: 'Abajur', isTaken: false, takenBy: '' },
+                { id: '36', name: 'Tapete', isTaken: false, takenBy: '' },
+                { id: '37', name: 'Cortina', isTaken: false, takenBy: '' },
+                { id: '38', name: 'Espelho Decorativo', isTaken: false, takenBy: '' },
+                { id: '39', name: 'Vaso de Flores', isTaken: false, takenBy: '' },
+                { id: '40', name: 'Kit Vinho', isTaken: false, takenBy: '' },
+                { id: '41', name: 'Taças de Vinho', isTaken: false, takenBy: '' },
+                { id: '42', name: 'Balde de Gelo', isTaken: false, takenBy: '' },
+                { id: '43', name: 'Coqueteleira', isTaken: false, takenBy: '' },
+                { id: '44', name: 'Aparelho de Jantar Completo', isTaken: false, takenBy: '' },
+                { id: '45', name: 'Jogo de Chá/Café', isTaken: false, takenBy: '' },
+                { id: '46', name: 'Utensílios de Cozinha', isTaken: false, takenBy: '' },
+                { id: '47', name: 'Balança de Cozinha', isTaken: false, takenBy: '' },
+                { id: '48', name: 'Garrafa Térmica', isTaken: false, takenBy: '' },
+                { id: '49', name: 'Copo Térmico', isTaken: false, takenBy: '' },
+                { id: '50', name: 'Kit de Potes Herméticos', isTaken: false, takenBy: '' }
             ];
 
-            const snapshot = await getDocs(giftsCollectionRef);
-            if (snapshot.empty) {
-                for (const gift of initialGifts) {
-                    await setDoc(doc(giftsCollectionRef), gift)
-                        .catch(error => console.error("Erro ao adicionar presente inicial:", error));
-                }
+            // Apenas adiciona se a lista estiver vazia para evitar duplicação em recargas
+            if (gifts.length === 0) {
+                gifts = initialGiftsData;
             }
-        };
+        }
 
-        // Função para escolher um presente
-        const handleChooseGift = async (giftId, guestName) => {
-            if (!db) {
-                console.error("Firestore não está inicializado.");
-                displayMessage("Erro: O banco de dados não está pronto. Tente novamente.");
-                return;
-            }
+        // Função para escolher um presente (agora atualiza o array localmente)
+        function handleChooseGift(giftId, guestName) {
+            const giftIndex = gifts.findIndex(g => g.id === giftId);
+            if (giftIndex !== -1 && !gifts[giftIndex].isTaken) {
+                gifts[giftIndex].isTaken = true;
+                gifts[giftIndex].takenBy = guestName;
 
-            const giftRef = doc(db, `artifacts/${__app_id}/public/data/weddingGifts`, giftId);
-            try {
-                await updateDoc(giftRef, {
-                    isTaken: true,
-                    takenBy: guestName
-                });
-                displayMessage(`O presente "${gifts.find(g => g.id === giftId)?.name}" foi reservado por ${guestName}!`);
-            } catch (error) {
-                console.error("Erro ao escolher presente:", error);
-                displayMessage("Erro ao reservar o presente. Tente novamente.");
-            }
-        };
-
-        // Inicialização do Firebase e carregamento dos dados
-        window.onload = async () => {
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-
-            if (Object.keys(firebaseConfig).length === 0) {
-                console.error("Firebase config is missing. Please ensure __firebase_config is provided.");
-                displayMessage("Erro: Configuração do Firebase ausente.");
-                return;
-            }
-
-            try {
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-
-                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken)
-                        .then(() => console.log("Signed in with custom token"))
-                        .catch(error => {
-                            console.error("Error signing in with custom token:", error);
-                            signInAnonymously(auth)
-                                .then(() => console.log("Signed in anonymously"))
-                                .catch(anonError => console.error("Error signing in anonymously:", anonError));
-                        });
-                } else {
-                    await signInAnonymously(auth)
-                        .then(() => console.log("Signed in anonymously"))
-                        .catch(error => console.error("Error signing in anonymously:", error));
-                }
-
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        userId = user.uid;
-                    } else {
-                        userId = crypto.randomUUID(); // Fallback para ID de usuário aleatório se não autenticado
+                // Reordenar a lista após a atualização
+                gifts.sort((a, b) => {
+                    if (a.isTaken === b.isTaken) {
+                        return a.name.localeCompare(b.name);
                     }
-                    // Uma vez que o userId está disponível, podemos começar a ouvir os presentes
-                    const giftsCollectionRef = collection(db, `artifacts/${appId}/public/data/weddingGifts`);
-                    const q = query(giftsCollectionRef);
-
-                    onSnapshot(q, (snapshot) => {
-                        gifts = snapshot.docs.map(doc => ({
-                            id: doc.id,
-                            ...doc.data()
-                        }));
-
-                        // Ordenar presentes: disponíveis primeiro, depois reservados, ambos em ordem alfabética
-                        gifts.sort((a, b) => {
-                            if (a.isTaken === b.isTaken) {
-                                return a.name.localeCompare(b.name);
-                            }
-                            return a.isTaken ? 1 : -1; // Disponíveis (false) vêm antes dos reservados (true)
-                        });
-                        renderGifts(); // Renderiza a lista toda vez que os dados mudam
-                        if (gifts.length === 0) {
-                            addInitialGifts(giftsCollectionRef);
-                        }
-                    }, (error) => {
-                        console.error("Erro ao carregar presentes:", error);
-                        displayMessage("Erro ao carregar a lista de presentes.");
-                    });
+                    return a.isTaken ? 1 : -1; // Disponíveis (false) vêm antes dos reservados (true)
                 });
 
-            } catch (error) {
-                console.error("Erro ao inicializar o Firebase:", error);
-                displayMessage("Erro ao inicializar o Firebase.");
+                renderGifts(); // Re-renderiza a lista para refletir a mudança
+                displayMessage(`O presente "${gifts[giftIndex].name}" foi reservado por ${guestName}!`);
+            } else if (giftIndex !== -1 && gifts[giftIndex].isTaken) {
+                showCustomModal(`O presente "${gifts[giftIndex].name}" já foi reservado por ${gifts[giftIndex].takenBy}.`);
             }
+        }
+
+        // Inicialização da aplicação ao carregar a janela
+        window.onload = () => {
+            addInitialGifts(); // Carrega os presentes iniciais
+            renderGifts();     // Renderiza a lista pela primeira vez
         };
     </script>
 </body>
