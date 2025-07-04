@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nossa Lista de Presentes de Casamento</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilos personalizados para a fonte Inter */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Estilo para o modal de mensagem */
+        .modal {
+            display: none; /* Escondido por padrão */
+            position: fixed; /* Fica no topo da página */
+            z-index: 1000; /* Acima de tudo */
+            left: 0;
+            top: 0;
+            width: 100%; /* Largura total */
+            height: 100%; /* Altura total */
+            overflow: auto; /* Habilita scroll se necessário */
+            background-color: rgba(0,0,0,0.4); /* Fundo escuro semi-transparente */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 p-4 sm:p-8 font-inter min-h-screen flex items-center justify-center">
+
+    <div id="app-root" class="max-w-4xl mx-auto bg-white bg-opacity-90 rounded-xl shadow-2xl p-6 sm:p-10 w-full">
+        <h1 class="text-4xl sm:text-5xl font-extrabold text-center text-gray-800 mb-6 drop-shadow-lg">
+            Nossa Lista de Presentes de Casamento
+        </h1>
+        <p class="text-center text-gray-600 mb-8 text-lg">
+            Escolha um presente para nos ajudar a construir nosso lar!
+        </p>
+
+        <div id="message-container" class="hidden bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <!-- Mensagens serão inseridas aqui -->
+        </div>
+
+        <div id="gifts-list" class="grid grid-cols-1 gap-4">
+            <!-- Presentes serão carregados aqui pelo JavaScript -->
+            <div class="text-center text-gray-700">Carregando lista de presentes...</div>
+        </div>
+
+        <p class="text-center text-gray-500 mt-8 text-sm">
+            Obrigado por fazer parte do nosso dia especial!
+        </p>
+    </div>
+
+    <!-- Modal para mensagens/alertas -->
+    <div id="custom-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <p id="modal-message" class="text-lg text-gray-800"></p>
+            <button onclick="closeModal()" class="mt-4 bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg shadow-lg hover:bg-indigo-700 transition duration-300">OK</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, query, onSnapshot, doc, updateDoc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Variáveis globais para o estado da aplicação
+        let db;
+        let auth;
+        let userId = '';
+        let gifts = [];
+        let messageTimeout;
+
+        // Função para exibir o modal personalizado
+        function showCustomModal(msg) {
+            const modal = document.getElementById('custom-modal');
+            const modalMessage = document.getElementById('modal-message');
+            modalMessage.textContent = msg;
+            modal.classList.remove('hidden');
+        }
+
+        // Função para fechar o modal personalizado
+        function closeModal() {
+            const modal = document.getElementById('custom-modal');
+            modal.classList.add('hidden');
+        }
+
+        // Função para exibir mensagens na UI principal
+        function displayMessage(msg) {
+            const messageContainer = document.getElementById('message-container');
+            messageContainer.textContent = msg;
+            messageContainer.classList.remove('hidden');
+            if (messageTimeout) {
+                clearTimeout(messageTimeout);
+            }
+            messageTimeout = setTimeout(() => {
+                messageContainer.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Função para renderizar a lista de presentes
+        function renderGifts() {
+            const giftsListContainer = document.getElementById('gifts-list');
+            giftsListContainer.innerHTML = ''; // Limpa a lista existente
+
+            if (gifts.length === 0) {
+                giftsListContainer.innerHTML = '<div class="text-center text-gray-700">Nenhum presente disponível no momento.</div>';
+                return;
+            }
+
+            gifts.forEach(gift => {
+                const giftItemDiv = document.createElement('div');
+                giftItemDiv.className = 'bg-white p-4 rounded-lg shadow-md mb-4 flex flex-col md:flex-row items-center justify-between';
+
+                const giftNameDiv = document.createElement('div');
+                giftNameDiv.className = 'text-lg font-semibold text-gray-800 mb-2 md:mb-0';
+                giftNameDiv.textContent = gift.name;
+                giftItemDiv.appendChild(giftNameDiv);
+
+                if (gift.isTaken) {
+                    const takenByDiv = document.createElement('div');
+                    takenByDiv.className = 'text-green-600 font-medium';
+                    takenByDiv.textContent = `Reservado por: ${gift.takenBy}`;
+                    giftItemDiv.appendChild(takenByDiv);
+                } else {
+                    const actionsDiv = document.createElement('div');
+                    actionsDiv.className = 'flex flex-col md:flex-row items-center';
+
+                    const inputField = document.createElement('input');
+                    inputField.type = 'text';
+                    inputField.placeholder = 'Seu Nome';
+                    inputField.className = 'p-2 border border-gray-300 rounded-md mr-2 w-full md:w-auto mb-2 md:mb-0 hidden'; // Escondido por padrão
+                    inputField.dataset.giftId = gift.id; // Para identificar qual input pertence a qual presente
+                    actionsDiv.appendChild(inputField);
+
+                    const chooseButton = document.createElement('button');
+                    chooseButton.className = 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105 w-full md:w-auto';
+                    chooseButton.textContent = 'Reservar';
+                    chooseButton.onclick = () => {
+                        // Toggle visibility of input field
+                        if (inputField.classList.contains('hidden')) {
+                            inputField.classList.remove('hidden');
+                            chooseButton.textContent = 'Escolher';
+                        } else {
+                            const guestName = inputField.value.trim();
+                            if (guestName === '') {
+                                showCustomModal('Por favor, insira seu nome antes de escolher o presente.');
+                                return;
+                            }
+                            handleChooseGift(gift.id, guestName);
+                            inputField.classList.add('hidden');
+                            chooseButton.textContent = 'Reservar';
+                        }
+                    };
+                    actionsDiv.appendChild(chooseButton);
+                    giftItemDiv.appendChild(actionsDiv);
+                }
+                giftsListContainer.appendChild(giftItemDiv);
+            });
+        }
+
+        // Adiciona presentes iniciais se a lista estiver vazia
+        const addInitialGifts = async (giftsCollectionRef) => {
+            const initialGifts = [
+                { name: 'Liquidificador', isTaken: false, takenBy: '' },
+                { name: 'Batedeira', isTaken: false, takenBy: '' },
+                { name: 'Cafeteira', isTaken: false, takenBy: '' },
+                { name: 'Jogo de Panelas', isTaken: false, takenBy: '' },
+                { name: 'Aspirador de Pó', isTaken: false, takenBy: '' },
+                { name: 'Air Fryer', isTaken: false, takenBy: '' },
+                { name: 'Robô Aspirador', isTaken: false, takenBy: '' },
+                { name: 'Máquina de Lavar', isTaken: false, takenBy: '' },
+                { name: 'Geladeira', isTaken: false, takenBy: '' },
+                { name: 'Forno Elétrico', isTaken: false, takenBy: '' },
+                { name: 'Micro-ondas', isTaken: false, takenBy: '' },
+                { name: 'Smart TV', isTaken: false, takenBy: '' },
+                { name: 'Home Theater', isTaken: false, takenBy: '' },
+                { name: 'Faqueiro', isTaken: false, takenBy: '' },
+                { name: 'Jogo de Jantar', isTaken: false, takenBy: '' },
+                { name: 'Jogo de Copos', isTaken: false, takenBy: '' },
+                { name: 'Toalhas de Banho', isTaken: false, takenBy: '' },
+                { name: 'Roupas de Cama', isTaken: false, takenBy: '' },
+                { name: 'Ferro de Passar', isTaken: false, takenBy: '' },
+                { name: 'Tábua de Passar', isTaken: false, takenBy: '' },
+                { name: 'Secador de Cabelo', isTaken: false, takenBy: '' },
+                { name: 'Fone de Ouvido Sem Fio', isTaken: false, takenBy: '' },
+                { name: 'Caixa de Som Bluetooth', isTaken: false, takenBy: '' },
+                { name: 'Bicicleta', isTaken: false, takenBy: '' },
+                { name: 'Kit Churrasco', isTaken: false, takenBy: '' },
+                { name: 'Máquina de Gelo', isTaken: false, takenBy: '' },
+                { name: 'Adega Climatizada', isTaken: false, takenBy: '' },
+                { name: 'Panela de Pressão Elétrica', isTaken: false, takenBy: '' },
+                { name: 'Grill Elétrico', isTaken: false, takenBy: '' },
+                { name: 'Sanduicheira', isTaken: false, takenBy: '' },
+                { name: 'Chaleira Elétrica', isTaken: false, takenBy: '' },
+                { name: 'Torradeira', isTaken: false, takenBy: '' },
+                { name: 'Processador de Alimentos', isTaken: false, takenBy: '' },
+                { name: 'Mesa de Centro', isTaken: false, takenBy: '' },
+                { name: 'Abajur', isTaken: false, takenBy: '' },
+                { name: 'Tapete', isTaken: false, takenBy: '' },
+                { name: 'Cortina', isTaken: false, takenBy: '' },
+                { name: 'Espelho Decorativo', isTaken: false, takenBy: '' },
+                { name: 'Vaso de Flores', isTaken: false, takenBy: '' },
+                { name: 'Kit Vinho', isTaken: false, takenBy: '' },
+                { name: 'Taças de Vinho', isTaken: false, takenBy: '' },
+                { name: 'Balde de Gelo', isTaken: false, takenBy: '' },
+                { name: 'Coqueteleira', isTaken: false, takenBy: '' },
+                { name: 'Aparelho de Jantar Completo', isTaken: false, takenBy: '' },
+                { name: 'Jogo de Chá/Café', isTaken: false, takenBy: '' },
+                { name: 'Utensílios de Cozinha', isTaken: false, takenBy: '' },
+                { name: 'Balança de Cozinha', isTaken: false, takenBy: '' },
+                { name: 'Garrafa Térmica', isTaken: false, takenBy: '' },
+                { name: 'Copo Térmico', isTaken: false, takenBy: '' },
+                { name: 'Kit de Potes Herméticos', isTaken: false, takenBy: '' },
+                { name: 'Organizador de Armário', isTaken: false, takenBy: '' },
+                { name: 'Cesto de Roupa Suja', isTaken: false, takenBy: '' },
+                { name: 'Kit Limpeza', isTaken: false, takenBy: '' },
+                { name: 'Vassoura Elétrica', isTaken: false, takenBy: '' },
+                { name: 'Mop Giratório', isTaken: false, takenBy: '' },
+                { name: 'Câmera de Segurança', isTaken: false, takenBy: '' },
+                { name: 'Assistente Virtual', isTaken: false, takenBy: '' },
+                { name: 'Smartwatch', isTaken: false, takenBy: '' },
+                { name: 'Notebook', isTaken: false, takenBy: '' },
+                { name: 'Impressora', isTaken: false, takenBy: '' },
+                { name: 'Monitor', isTaken: false, takenBy: '' },
+                { name: 'Teclado e Mouse Sem Fio', isTaken: false, takenBy: '' },
+                { name: 'Webcam', isTaken: false, takenBy: '' },
+                { name: 'Microfone', isTaken: false, takenBy: '' },
+                { name: 'Cadeira Gamer', isTaken: false, takenBy: '' },
+                { name: 'Mesa Gamer', isTaken: false, takenBy: '' },
+                { name: 'Projetor', isTaken: false, takenBy: '' },
+                { name: 'Soundbar', isTaken: false, takenBy: '' },
+                { name: 'Vitrola', isTaken: false, takenBy: '' },
+                { name: 'Jogos de Tabuleiro', isTaken: false, takenBy: '' },
+                { name: 'Kit de Pintura', isTaken: false, takenBy: '' },
+                { name: 'Kit de Maquiagem', isTaken: false, takenBy: '' },
+                { name: 'Massageador', isTaken: false, takenBy: '' },
+                { name: 'Esteira Ergométrica', isTaken: false, takenBy: '' },
+                { name: 'Bicicleta Ergométrica', isTaken: false, takenBy: '' },
+                { name: 'Kit de Boxe', isTaken: false, takenBy: '' },
+                { name: 'Mochila de Viagem', isTaken: false, takenBy: '' },
+                { name: 'Malas de Viagem', isTaken: false, takenBy: '' },
+                { name: 'Kit Camping', isTaken: false, takenBy: '' },
+                { name: 'Câmera Fotográfica', isTaken: false, takenBy: '' },
+                { name: 'Drone', isTaken: false, takenBy: '' },
+                { name: 'Kit Pesca', isTaken: false, takenBy: '' },
+                { name: 'Churrasqueira Portátil', isTaken: false, takenBy: '' },
+                { name: 'Ventilador', isTaken: false, takenBy: '' },
+                { name: 'Aquecedor', isTaken: false, takenBy: '' },
+                { name: 'Umidificador', isTaken: false, takenBy: '' },
+                { name: 'Purificador de Ar', isTaken: false, takenBy: '' },
+                { name: 'Roupão', isTaken: false, takenBy: '' },
+                { name: 'Pijama', isTaken: false, takenBy: '' },
+                { name: 'Travesseiro', isTaken: false, takenBy: '' },
+                { name: 'Cobertor', isTaken: false, takenBy: '' },
+                { name: 'Edredom', isTaken: false, takenBy: '' },
+                { name: 'Cama', isTaken: false, takenBy: '' },
+                { name: 'Guarda-Roupa', isTaken: false, takenBy: '' },
+                { name: 'Sofá', isTaken: false, takenBy: '' },
+                { name: 'Poltrona', isTaken: false, takenBy: '' },
+                { name: 'Rack', isTaken: false, takenBy: '' },
+                { name: 'Luminária de Chão', isTaken: false, takenBy: '' },
+                { name: 'Luminária de Mesa', isTaken: false, takenBy: '' },
+                { name: 'Lustre', isTaken: false, takenBy: '' },
+                { name: 'Máquina de Lavar Louça', isTaken: false, takenBy: '' },
+                { name: 'Secadora de Roupas', isTaken: false, takenBy: '' },
+                { name: 'Máquina de Café Expresso', isTaken: false, takenBy: '' },
+                { name: 'Cooktop', isTaken: false, takenBy: '' },
+                { name: 'Coifa', isTaken: false, takenBy: '' }
+            ];
+
+            const snapshot = await getDocs(giftsCollectionRef);
+            if (snapshot.empty) {
+                for (const gift of initialGifts) {
+                    await setDoc(doc(giftsCollectionRef), gift)
+                        .catch(error => console.error("Erro ao adicionar presente inicial:", error));
+                }
+            }
+        };
+
+        // Função para escolher um presente
+        const handleChooseGift = async (giftId, guestName) => {
+            if (!db) {
+                console.error("Firestore não está inicializado.");
+                displayMessage("Erro: O banco de dados não está pronto. Tente novamente.");
+                return;
+            }
+
+            const giftRef = doc(db, `artifacts/${__app_id}/public/data/weddingGifts`, giftId);
+            try {
+                await updateDoc(giftRef, {
+                    isTaken: true,
+                    takenBy: guestName
+                });
+                displayMessage(`O presente "${gifts.find(g => g.id === giftId)?.name}" foi reservado por ${guestName}!`);
+            } catch (error) {
+                console.error("Erro ao escolher presente:", error);
+                displayMessage("Erro ao reservar o presente. Tente novamente.");
+            }
+        };
+
+        // Inicialização do Firebase e carregamento dos dados
+        window.onload = async () => {
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+
+            if (Object.keys(firebaseConfig).length === 0) {
+                console.error("Firebase config is missing. Please ensure __firebase_config is provided.");
+                displayMessage("Erro: Configuração do Firebase ausente.");
+                return;
+            }
+
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken)
+                        .then(() => console.log("Signed in with custom token"))
+                        .catch(error => {
+                            console.error("Error signing in with custom token:", error);
+                            signInAnonymously(auth)
+                                .then(() => console.log("Signed in anonymously"))
+                                .catch(anonError => console.error("Error signing in anonymously:", anonError));
+                        });
+                } else {
+                    await signInAnonymously(auth)
+                        .then(() => console.log("Signed in anonymously"))
+                        .catch(error => console.error("Error signing in anonymously:", error));
+                }
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                    } else {
+                        userId = crypto.randomUUID(); // Fallback para ID de usuário aleatório se não autenticado
+                    }
+                    // Uma vez que o userId está disponível, podemos começar a ouvir os presentes
+                    const giftsCollectionRef = collection(db, `artifacts/${appId}/public/data/weddingGifts`);
+                    const q = query(giftsCollectionRef);
+
+                    onSnapshot(q, (snapshot) => {
+                        gifts = snapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data()
+                        }));
+
+                        // Ordenar presentes: disponíveis primeiro, depois reservados, ambos em ordem alfabética
+                        gifts.sort((a, b) => {
+                            if (a.isTaken === b.isTaken) {
+                                return a.name.localeCompare(b.name);
+                            }
+                            return a.isTaken ? 1 : -1; // Disponíveis (false) vêm antes dos reservados (true)
+                        });
+                        renderGifts(); // Renderiza a lista toda vez que os dados mudam
+                        if (gifts.length === 0) {
+                            addInitialGifts(giftsCollectionRef);
+                        }
+                    }, (error) => {
+                        console.error("Erro ao carregar presentes:", error);
+                        displayMessage("Erro ao carregar a lista de presentes.");
+                    });
+                });
+
+            } catch (error) {
+                console.error("Erro ao inicializar o Firebase:", error);
+                displayMessage("Erro ao inicializar o Firebase.");
+            }
+        };
+    </script>
+</body>
+</html>
